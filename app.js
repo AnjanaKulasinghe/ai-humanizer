@@ -362,11 +362,11 @@ function superHumanizeText(text, level) {
           return '(' + p1 + ')';
         });
       },
-      // Randomly vary punctuation for heavy and medium
+      // Randomly vary punctuation for heavy and medium (no ellipses)
       () => {
         if ((level === 'heavy' || level === 'medium') && Math.random() > 0.5) {
-          const puncts = ['.', '...', '!', '—'];
-          result = result.replace(/[.!?]$/, puncts[Math.floor(Math.random() * puncts.length)]);
+          const puncts = ['.', '!', '—']; // Removed '...'
+          result = result.replace(/[.!?]$/, puncts[Math.floor(Math.random()*puncts.length)]);
         }
       },
       // Randomly lowercase some sentences for heavy
