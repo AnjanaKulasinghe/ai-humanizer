@@ -366,7 +366,7 @@ function superHumanizeText(text, level) {
       () => {
         if ((level === 'heavy' || level === 'medium') && Math.random() > 0.5) {
           const puncts = ['.', '!', '—']; // Removed '...'
-          result = result.replace(/[.!?]$/, puncts[Math.floor(Math.random()*puncts.length)]);
+          result = result.replace(/[.!?]$/, puncts[Math.floor(Math.random() * puncts.length)]);
         }
       },
       // Randomly lowercase some sentences for heavy
