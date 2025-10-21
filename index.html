@@ -4,13 +4,212 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Text Humanizer</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .icon { width: 20px; height: 20px; }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="text/babel" src="app.js"></script>
+    <div class="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-6">
+        <div class="max-w-5xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-800 mb-3">✨ AI Text Humanizer</h1>
+                <p class="text-gray-600">Transform robotic AI text into natural, conversational writing</p>
+            </div>
+
+            <!-- Level Selector -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Humanization Level</h3>
+                <div class="flex gap-4">
+                    <button onclick="setLevel('light')" id="btn-light" class="flex-1 py-3 px-4 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        <div class="font-bold">Light</div>
+                        <div class="text-sm opacity-90">Subtle changes</div>
+                    </button>
+                    <button onclick="setLevel('medium')" id="btn-medium" class="flex-1 py-3 px-4 rounded-lg font-medium transition-all bg-purple-600 text-white shadow-lg">
+                        <div class="font-bold">Medium</div>
+                        <div class="text-sm opacity-90">Balanced approach</div>
+                    </button>
+                    <button onclick="setLevel('heavy')" id="btn-heavy" class="flex-1 py-3 px-4 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        <div class="font-bold">Heavy</div>
+                        <div class="text-sm opacity-90">Very casual</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Input/Output Grid -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Input -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">AI-Generated Text</h2>
+                    <textarea id="inputText" placeholder="Paste your AI-generated text here..." class="w-full h-64 p-4 border-2 border-gray-200 rounded-lg focus:border-purple-400 focus:outline-none resize-none text-gray-700"></textarea>
+                    <div class="mt-4 flex justify-between items-center">
+                        <span id="inputCount" class="text-sm text-gray-500">0 characters</span>
+                        <button onclick="humanize()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                            ✨ Humanize
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Output -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Humanized Text</h2>
+                    <div class="relative">
+                        <textarea id="outputText" readonly placeholder="Your humanized text will appear here..." class="w-full h-64 p-4 border-2 border-gray-200 rounded-lg bg-gray-50 resize-none text-gray-700"></textarea>
+                        <button onclick="copyText()" id="copyBtn" class="absolute top-2 right-2 p-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow hidden">
+                            📋
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <span id="outputCount" class="text-sm text-gray-500">0 characters</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Advanced Humanization Features:</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-semibold text-purple-600 mb-2">Language Patterns</h4>
+                        <ul class="space-y-1 text-sm text-gray-600">
+                            <li>• Natural contractions (don't, won't, I'll)</li>
+                            <li>• Conversational fillers (honestly, you know)</li>
+                            <li>• Casual transitions (plus, anyway, though)</li>
+                            <li>• Informal interjections and asides</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-purple-600 mb-2">Structure Changes</h4>
+                        <ul class="space-y-1 text-sm text-gray-600">
+                            <li>• Removes robotic AI phrases</li>
+                            <li>• Simplifies complex vocabulary</li>
+                            <li>• Varies sentence length naturally</li>
+                            <li>• Breaks up formal structures</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = 'medium';
+
+        function setLevel(level) {
+            currentLevel = level;
+            ['light', 'medium', 'heavy'].forEach(l => {
+                const btn = document.getElementById(`btn-${l}`);
+                if (l === level) {
+                    btn.className = 'flex-1 py-3 px-4 rounded-lg font-medium transition-all bg-purple-600 text-white shadow-lg';
+                } else {
+                    btn.className = 'flex-1 py-3 px-4 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200';
+                }
+            });
+        }
+
+        document.getElementById('inputText').addEventListener('input', function() {
+            document.getElementById('inputCount').textContent = this.value.length + ' characters';
+        });
+
+        function humanize() {
+            const input = document.getElementById('inputText').value;
+            if (!input.trim()) return;
+
+            const output = humanizeText(input, currentLevel);
+            document.getElementById('outputText').value = output;
+            document.getElementById('outputCount').textContent = output.length + ' characters';
+            document.getElementById('copyBtn').classList.remove('hidden');
+        }
+
+        function copyText() {
+            const output = document.getElementById('outputText');
+            output.select();
+            document.execCommand('copy');
+            const btn = document.getElementById('copyBtn');
+            btn.textContent = '✅';
+            setTimeout(() => btn.textContent = '📋', 2000);
+        }
+
+        function humanizeText(text, level) {
+            if (!text.trim()) return '';
+
+            let sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+            
+            const fillers = {
+                light: ['Well, ', 'So, ', 'Now, '],
+                medium: ['Well, ', 'You know, ', 'Actually, ', 'Honestly, ', 'I think ', 'Look, ', 'So, ', 'Basically, '],
+                heavy: ['Well, ', 'You know, ', 'Actually, ', 'Honestly, ', 'I think ', 'Look, ', 'So, ', 'Basically, ', 
+                        'To be honest, ', 'I mean, ', 'The thing is, ', 'Here\'s the deal - ', 'Let me tell you, ']
+            };
+
+            const transitions = {
+                light: ['And ', 'But ', 'So '],
+                medium: ['Plus, ', 'And ', 'But ', 'So ', 'Anyway, ', 'Though, ', 'Still, '],
+                heavy: ['Plus, ', 'And ', 'But ', 'So ', 'Anyway, ', 'Though, ', 'Still, ', 
+                        'On top of that, ', 'That said, ', 'Either way, ', 'In any case, ']
+            };
+
+            function addContractions(sent) {
+                return sent
+                    .replace(/\bdo not\b/gi, "don't")
+                    .replace(/\bdoes not\b/gi, "doesn't")
+                    .replace(/\bcannot\b/gi, "can't")
+                    .replace(/\bwill not\b/gi, "won't")
+                    .replace(/\bit is\b/gi, "it's")
+                    .replace(/\bI am\b/g, "I'm")
+                    .replace(/\byou are\b/gi, "you're")
+                    .replace(/\bwe are\b/gi, "we're")
+                    .replace(/\bwould not\b/gi, "wouldn't")
+                    .replace(/\bshould not\b/gi, "shouldn't")
+                    .replace(/\bcould not\b/gi, "couldn't");
+            }
+
+            function simplifyWords(sent) {
+                return sent
+                    .replace(/\butilize\b/gi, 'use')
+                    .replace(/\bfacilitate\b/gi, 'help')
+                    .replace(/\bnevertheless\b/gi, 'but')
+                    .replace(/\bfurthermore\b/gi, 'also')
+                    .replace(/\bin order to\b/gi, 'to')
+                    .replace(/\bdue to the fact that\b/gi, 'because')
+                    .replace(/\bprior to\b/gi, 'before')
+                    .replace(/\bcommence\b/gi, 'start');
+            }
+
+            function removeAIPatterns(sent) {
+                return sent
+                    .replace(/\bIn conclusion,\b/gi, 'So,')
+                    .replace(/\bIn summary,\b/gi, 'Basically,')
+                    .replace(/\bFirstly,\b/gi, 'First,')
+                    .replace(/\bSecondly,\b/gi, 'Second,');
+            }
+
+            let humanized = sentences.map((sent, idx) => {
+                let result = sent.trim();
+                
+                result = removeAIPatterns(result);
+                result = addContractions(result);
+                result = simplifyWords(result);
+                
+                // Add fillers
+                const threshold = level === 'heavy' ? 0.5 : level === 'medium' ? 0.7 : 0.85;
+                if (Math.random() > threshold && idx > 0) {
+                    const filler = fillers[level];
+                    result = filler[Math.floor(Math.random() * filler.length)] + result;
+                }
+                
+                // Add transitions
+                if (idx > 0 && Math.random() > 0.6) {
+                    const trans = transitions[level];
+                    result = trans[Math.floor(Math.random() * trans.length)] + result;
+                }
+                
+                return result;
+            });
+
+            return humanized.join(' ').replace(/\s+/g, ' ').trim();
+        }
+    </script>
 </body>
 </html>
